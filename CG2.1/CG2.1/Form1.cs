@@ -59,7 +59,7 @@ namespace CG2._1
             Boolean isX;
             double dy = Math.Abs(y2 - y1);
             double dx = Math.Abs(x2 - x1);
-            double m = dy / dx;
+            double m = dx > 0 && dy > 0 ? dy / dx: 0;
 
             if (dx < dy)
                 isX = false;
@@ -81,7 +81,7 @@ namespace CG2._1
                 for (int x = x1; x <= x2; x++)
                 {
                     double y = y1 + m * (x - x1);
-                    writePixel(x, (int)Math.Round(y));
+                    writePixel(x, Convert.ToInt32(Math.Round(y)));
                 }
             }
             else
@@ -99,7 +99,7 @@ namespace CG2._1
 
                 for (int y = y1; y <= y2; y++)
                 {
-                    double x = x1 + (y - y1) / m;
+                    double x = x1 + ((y - y1) / m);
                     writePixel((int)Math.Round(x), y);
                 }
             }
@@ -109,6 +109,8 @@ namespace CG2._1
         private void writePixel(int x, int y)
         {
             Bitmap m = ((Bitmap)(pbGraficos.Image));
+            if (y < 0)
+                Console.WriteLine("erro");
             m.SetPixel(x, y, Color.FromArgb(0, 0, 0));
             pbGraficos.Image = m;
         }
