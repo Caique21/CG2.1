@@ -55,35 +55,55 @@ namespace CG2._1
 
         public void eqReta(int x1, int y1, int x2, int y2)
         {
-            int Length, I;
-            double X, Y;
-            int x,y;
-            Boolean flag;
+            int aux;
+            Boolean isX;
+            double dy = Math.Abs(y2 - y1);
+            double dx = Math.Abs(x2 - x1);
+            double m = dy / dx;
 
-            Length = Math.Abs(x2 - x1);
-
-            if (Math.Abs(y2 - y1) > Length)
-            {
-                Length = Math.Abs(y2 - y1);
-                flag = false;
-            }
+            if (dx < dy)
+                isX = false;
             else
-                flag = true;
+                isX = true;
 
-            if(flag)
+            if(isX)
             {
-                for(x = x1; x <= x2; x++)
+                if(x1 > x2 && y1 > y2)
                 {
-                    y = y1 + Length * (x - x1);
-                    writePixel(x, y);
+                    aux = x1;
+                    x1 = x2;
+                    x2 = aux;
+
+                    aux = y1;
+                    y1 = y2;
+                    y2 = aux;
+                }
+                for (int x = x1; x <= x2; x++)
+                {
+                    double y = y1 + m * (x - x1);
+                    writePixel(x, (int)Math.Round(y));
                 }
             }
             else
-                for (y = y1; y <= y2; y++)
+            {
+                if (x1 > x2 && y1 > y2)
                 {
-                    x = x1 + Length * (y - y1);
-                    writePixel(x, y);
+                    aux = x1;
+                    x1 = x2;
+                    x2 = aux;
+
+                    aux = y1;
+                    y1 = y2;
+                    y2 = aux;
                 }
+
+                for (int y = y1; y <= y2; y++)
+                {
+                    double x = x1 + (y - y1) / m;
+                    writePixel((int)Math.Round(x), y);
+                }
+            }
+                
         }
 
         private void writePixel(int x, int y)
@@ -97,7 +117,7 @@ namespace CG2._1
         {
             if (cordenadas.X == 0 && cordenadas.Y == 0)
                 cordenadas = ((MouseEventArgs)e).Location;
-            else
+            else 
             {
                 if (rbDDA.Checked == true)
                 {

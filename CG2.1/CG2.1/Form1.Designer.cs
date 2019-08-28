@@ -32,7 +32,6 @@
             this.pbGraficos = new System.Windows.Forms.PictureBox();
             this.Primitivas = new System.Windows.Forms.TabControl();
             this.Graficas = new System.Windows.Forms.TabPage();
-            this.Poligonos = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.rbPMElipse = new System.Windows.Forms.RadioButton();
             this.label3 = new System.Windows.Forms.Label();
@@ -44,6 +43,7 @@
             this.rbGeralReta = new System.Windows.Forms.RadioButton();
             this.label1 = new System.Windows.Forms.Label();
             this.rbDDA = new System.Windows.Forms.RadioButton();
+            this.Poligonos = new System.Windows.Forms.TabPage();
             ((System.ComponentModel.ISupportInitialize)(this.pbGraficos)).BeginInit();
             this.Primitivas.SuspendLayout();
             this.Graficas.SuspendLayout();
@@ -52,6 +52,7 @@
             // 
             // pbGraficos
             // 
+            this.pbGraficos.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pbGraficos.Image = ((System.Drawing.Image)(resources.GetObject("pbGraficos.Image")));
             this.pbGraficos.InitialImage = null;
             this.pbGraficos.Location = new System.Drawing.Point(12, 12);
@@ -82,16 +83,6 @@
             this.Graficas.TabIndex = 0;
             this.Graficas.Text = "Gráficas";
             this.Graficas.UseVisualStyleBackColor = true;
-            // 
-            // Poligonos
-            // 
-            this.Poligonos.Location = new System.Drawing.Point(4, 22);
-            this.Poligonos.Name = "Poligonos";
-            this.Poligonos.Padding = new System.Windows.Forms.Padding(3);
-            this.Poligonos.Size = new System.Drawing.Size(119, 492);
-            this.Poligonos.TabIndex = 1;
-            this.Poligonos.Text = "Polígonos";
-            this.Poligonos.UseVisualStyleBackColor = true;
             // 
             // groupBox1
             // 
@@ -215,6 +206,16 @@
             this.rbDDA.Text = "DDA";
             this.rbDDA.UseVisualStyleBackColor = true;
             this.rbDDA.CheckedChanged += new System.EventHandler(this.RbDDA_CheckedChanged);
+            // 
+            // Poligonos
+            // 
+            this.Poligonos.Location = new System.Drawing.Point(4, 22);
+            this.Poligonos.Name = "Poligonos";
+            this.Poligonos.Padding = new System.Windows.Forms.Padding(3);
+            this.Poligonos.Size = new System.Drawing.Size(200, 492);
+            this.Poligonos.TabIndex = 1;
+            this.Poligonos.Text = "Polígonos";
+            this.Poligonos.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
