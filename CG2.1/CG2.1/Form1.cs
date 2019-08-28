@@ -16,6 +16,7 @@ namespace CG2._1
         public Form1()
         {
             InitializeComponent();
+            rbGeralReta.Checked = true;
             cordenadas = new Point(0, 0);
         }
 
@@ -32,12 +33,57 @@ namespace CG2._1
             Yinc = (double)(y2 - y1) / Length;
 
             X = x1; Y = y1;
-            while (X < x2)
+            if(X< x2)
             {
-                writePixel((int)Math.Round(X), (int)Math.Round(Y));
-                X = X + Xinc;
-                Y = Y + Yinc;
+                while (X < x2)
+                {
+                    writePixel((int)Math.Round(X), (int)Math.Round(Y));
+                    X = X + Xinc;
+                    Y = Y + Yinc;
+                }
             }
+            else
+            {
+                while (X > x2)
+                {
+                    writePixel((int)Math.Round(X), (int)Math.Round(Y));
+                    X = X + Xinc;
+                    Y = Y + Yinc;
+                }
+            }
+        }
+
+        public void eqReta(int x1, int y1, int x2, int y2)
+        {
+            int Length, I;
+            double X, Y;
+            int x,y;
+            Boolean flag;
+
+            Length = Math.Abs(x2 - x1);
+
+            if (Math.Abs(y2 - y1) > Length)
+            {
+                Length = Math.Abs(y2 - y1);
+                flag = false;
+            }
+            else
+                flag = true;
+
+            if(flag)
+            {
+                for(x = x1; x <= x2; x++)
+                {
+                    y = y1 + Length * (x - x1);
+                    writePixel(x, y);
+                }
+            }
+            else
+                for (y = y1; y <= y2; y++)
+                {
+                    x = x1 + Length * (y - y1);
+                    writePixel(x, y);
+                }
         }
 
         private void writePixel(int x, int y)
@@ -54,8 +100,21 @@ namespace CG2._1
             else
             {
                 if (rbDDA.Checked == true)
+                {
                     DDA(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y);
+                    cordenadas = new Point(0, 0);
+                }
+                if(rbGeralReta.Checked == true)
+                {
+                    eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y);
+                    cordenadas = new Point(0, 0);
+                }
             }
+        }
+
+        private void RbDDA_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
