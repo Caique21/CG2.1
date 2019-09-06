@@ -57,54 +57,83 @@ namespace CG2._1
         {
             int aux;
             Boolean isX;
-            double dy = Math.Abs(y2 - y1);
-            double dx = Math.Abs(x2 - x1);
-            double m = dx > 0 && dy > 0 ? dy / dx: 0;
+            double dy = y2 - y1;
+            double dx = x2 - x1;
+            double m = dy / dx;
 
             if (dx < dy)
                 isX = false;
             else
                 isX = true;
 
+            int inicio, fim;
+
             if(isX)
             {
-                if(x1 > x2 && y1 > y2)
+                if(x1 > x2)
                 {
-                    aux = x1;
-                    x1 = x2;
-                    x2 = aux;
-
-                    aux = y1;
-                    y1 = y2;
-                    y2 = aux;
+                    inicio = x2; fim = x1;
                 }
-                for (int x = x1; x <= x2; x++)
+                else
                 {
-                    double y = y1 + m * (x - x1);
+                    inicio = x1; fim = x2;
+                }
+
+                double y;
+                for (int x = inicio; x <= fim; x++)
+                {
+                    
+                    y = y1 + m * (x - x1);
                     writePixel(x, Convert.ToInt32(Math.Round(y)));
                 }
             }
             else
             {
-                if (x1 > x2 && y1 > y2)
+                if (y1 > y2)
                 {
-                    aux = x1;
-                    x1 = x2;
-                    x2 = aux;
-
-                    aux = y1;
-                    y1 = y2;
-                    y2 = aux;
+                    inicio = y2; fim = y1;
+                }
+                else
+                {
+                    inicio = y1; fim = y2;
                 }
 
-                for (int y = y1; y <= y2; y++)
+                double x;
+                for (int y = inicio; y <= fim; y++)
                 {
-                    double x = x1 + ((y - y1) / m);
+                    x = x1 + ((y - y1) / m);
                     writePixel((int)Math.Round(x), y);
                 }
-            }
-                
+            }       
         }
+
+        void bresenham(int x1, int y1, int x2, int y2)
+        {
+            int declive = 1;
+            int dx, dy, incE, incNE, d, x, y;
+            dx = x2 - x1;
+            dy = y2 - y1;
+
+            // Constante de Bresenham 
+            incE = 2 * dy;
+            incNE = 2 * dy - 2 * dx;
+            d = 2 * dy - dx;
+            y = y1;
+            for (x = x1; x <= x2; x++)
+            {
+                writePixel(x, y);
+                if (d <= 0)
+                {
+                    d += incE;
+                }
+                else
+                {
+                    d += incNE;
+                    y += declive;
+                }
+            }
+        }
+
 
         private void writePixel(int x, int y)
         {
@@ -121,6 +150,14 @@ namespace CG2._1
                 cordenadas = ((MouseEventArgs)e).Location;
             else 
             {
+                int x1, x2, y1, y2,aux;
+                x1 = cordenadas.X;
+                y1 = cordenadas.Y;
+                x2 = ((MouseEventArgs)e).Location.X;
+                y2 = ((MouseEventArgs)e).Location.Y;
+
+                
+
                 if (rbDDA.Checked == true)
                 {
                     DDA(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y);
@@ -128,8 +165,12 @@ namespace CG2._1
                 }
                 if(rbGeralReta.Checked == true)
                 {
-                    eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y);
+                    eqReta(x1, y1, x2, y2);
                     cordenadas = new Point(0, 0);
+                }
+                if(rbPMReta.Checked == true)
+                {
+                    bresenham(x1, y1, x2, y2);
                 }
             }
         }
