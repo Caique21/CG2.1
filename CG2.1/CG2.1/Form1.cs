@@ -114,6 +114,7 @@ namespace CG2._1
         {
             int declive = 1;
             int dx, dy, incE, incNE, d, x, y;
+            int xfim;
             dx = x2 - x1;
             dy = y2 - y1;
 
@@ -121,18 +122,50 @@ namespace CG2._1
             incE = 2 * dy;
             incNE = 2 * (dy - dx);
             d = 2 * dy - dx;
-            y = y1;
-            for (x = x1; x <= x2; x++)
+            if(x2 > x1)
             {
-                writePixel(x, y,apagavel);
-                if (d <= 0)
+                int aux = incE;
+                incE = incNE;
+                incNE = aux;
+                x = x1; xfim = x2; y = y2;
+            }
+            else
+            {
+                x = x2; xfim = x1; y = y1;
+            }
+
+            if(y2 >= y1)
+            {
+                for (; x <= xfim; x++)
                 {
-                    d += incE;
+                    writePixel(x, y, apagavel);
+                    if (d <= 0)
+                    {
+                        d += incE;
+                    }
+                    else
+                    {
+                        d += incNE;
+                        y++;
+                    }
                 }
-                else
+            }
+            else
+            {
+                y1 = -y1;
+                y2 = -y2;
+                for (; x <= xfim; x++)
                 {
-                    d += incNE;
-                    y++;
+                    writePixel(x, -y, apagavel);
+                    if (d <= 0)
+                    {
+                        d += incE;
+                    }
+                    else
+                    {
+                        d += incNE;
+                        y++;
+                    }
                 }
             }
         }
@@ -166,8 +199,9 @@ namespace CG2._1
                 }
                 if (rbPMReta.Checked == true)
                 {
+
                     bresenham(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false);
-                    MessageBox.Show("Hello, world.");
+                    
                 }
                 click = false;
                 list = new List<Point>();
@@ -198,7 +232,12 @@ namespace CG2._1
                 }
                 if (rbPMReta.Checked == true)
                 {
-                    bresenham(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,true);
+                    if (((MouseEventArgs)e).Location.X != cordenadas.X && ((MouseEventArgs)e).Location.Y != cordenadas.Y)
+                    {
+                        bresenham(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y, true);
+                    }
+                        
+                        
                 }
             }
         }
