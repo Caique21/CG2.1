@@ -199,10 +199,15 @@ namespace CG2._1
                 }
                 if (rbPMReta.Checked == true)
                 {
-
                     bresenham(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false);
-                    
                 }
+                if(rbPMReta.Checked == true)
+                {
+                    eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y, false);
+                    int raio = (int)Math.Sqrt((((MouseEventArgs)e).Location.X + cordenadas.X) + (((MouseEventArgs)e).Location.Y + cordenadas.Y));
+                    pontomedio(raio, 1, cordenadas.X, cordenadas.Y,false);
+                }
+
                 click = false;
                 list = new List<Point>();
             }
@@ -235,9 +240,12 @@ namespace CG2._1
                     if (((MouseEventArgs)e).Location.X != cordenadas.X && ((MouseEventArgs)e).Location.Y != cordenadas.Y)
                     {
                         bresenham(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y, true);
-                    }
-                        
-                        
+                    }   
+                }
+                if (rbGeralCirc.Checked == true)
+                {
+                    //int raio = (int)Math.Sqrt(cordenadas.X + cordenadas.Y);
+                    //pontomedio(raio, 1, cordenadas.X, cordenadas.Y,true);
                 }
             }
         }
@@ -253,6 +261,48 @@ namespace CG2._1
                     pbGraficos.Image = m;
                 }
             }
+        }
+
+        void pontomedio(int raio,int valor, int cx, int cy, Boolean apagavel)
+        {
+            int x = 0;
+            int y = raio;
+            double d = 1 - raio;
+
+            PontosCircunferência(x, y, cx, cy, valor,apagavel);
+            while(y > x)
+            {
+                if (d < 0)
+                    d += 2 * x + 3;
+                else
+                {
+                    d += 2 * (x - y) + 5;
+                    y--;
+                }
+                x++;
+                PontosCircunferência(x, y, cx, cy, valor,apagavel);
+            }
+        }
+
+        void PontosCircunferência(int x, int y,int cx, int cy, int valor,Boolean apagavel)
+        {
+            PintaPixel(cx + x, cy + y, valor, apagavel);
+            PintaPixel(cx + y, cy + x, valor, apagavel);
+            PintaPixel(cx + y, cy - x, valor, apagavel);
+            PintaPixel(cx + x, cy - y, valor, apagavel);
+            PintaPixel(cx - x, cy - y, valor, apagavel);
+            PintaPixel(cx - y, cy - x, valor, apagavel);
+            PintaPixel(cx - y, cy + x, valor, apagavel);
+            PintaPixel(cx - x, cy + y, valor, apagavel);
+        }
+
+        private void PintaPixel(int x, int y, int valor,Boolean apagavel)
+        {
+            if (apagavel)
+                list.Add(new Point(x, y));
+            Bitmap m = ((Bitmap)(pbGraficos.Image));
+            m.SetPixel(x, y, Color.FromArgb(0, 0, 0));
+            pbGraficos.Image = m;
         }
     }
 }
