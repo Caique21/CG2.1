@@ -61,6 +61,7 @@
             this.pbGraficos.TabIndex = 1;
             this.pbGraficos.TabStop = false;
             this.pbGraficos.Click += new System.EventHandler(this.PbGraficos_Click);
+            this.pbGraficos.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PbGraficos_MouseMove);
             // 
             // Primitivas
             // 

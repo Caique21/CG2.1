@@ -13,6 +13,9 @@ namespace CG2._1
     public partial class Form1 : Form
     {
         private Point cordenadas;
+        private Boolean click = false;
+        private List<Point> list = new List<Point>();
+
         public Form1()
         {
             InitializeComponent();
@@ -20,7 +23,7 @@ namespace CG2._1
             cordenadas = new Point(0, 0);
         }
 
-        public void DDA(int x1, int y1, int x2, int y2)
+        public void DDA(int x1, int y1, int x2, int y2,Boolean apagavel)
         {
             int Length, I;
             double X, Y, Xinc, Yinc;
@@ -37,7 +40,7 @@ namespace CG2._1
             {
                 while (X < x2)
                 {
-                    writePixel((int)Math.Round(X), (int)Math.Round(Y));
+                    writePixel((int)Math.Round(X), (int)Math.Round(Y),apagavel);
                     X = X + Xinc;
                     Y = Y + Yinc;
                 }
@@ -46,14 +49,14 @@ namespace CG2._1
             {
                 while (X > x2)
                 {
-                    writePixel((int)Math.Round(X), (int)Math.Round(Y));
+                    writePixel((int)Math.Round(X), (int)Math.Round(Y),apagavel);
                     X = X + Xinc;
                     Y = Y + Yinc;
                 }
             }
         }
 
-        public void eqReta(int x1, int y1, int x2, int y2)
+        public void eqReta(int x1, int y1, int x2, int y2,Boolean apagavel)
         {
             int aux;
             Boolean isX;
@@ -84,7 +87,7 @@ namespace CG2._1
                 {
                     
                     y = y1 + m * (x - x1);
-                    writePixel(x, Convert.ToInt32(Math.Round(y)));
+                    writePixel(x, Convert.ToInt32(Math.Round(y)),apagavel);
                 }
             }
             else
@@ -102,12 +105,12 @@ namespace CG2._1
                 for (int y = inicio; y <= fim; y++)
                 {
                     x = x1 + ((y - y1) / m);
-                    writePixel((int)Math.Round(x), y);
+                    writePixel((int)Math.Round(x), y,apagavel);
                 }
             }       
         }
 
-        void bresenham(int x1, int y1, int x2, int y2)
+        void bresenham(int x1, int y1, int x2, int y2,Boolean apagavel)
         {
             int declive = 1;
             int dx, dy, incE, incNE, d, x, y;
@@ -116,12 +119,12 @@ namespace CG2._1
 
             // Constante de Bresenham 
             incE = 2 * dy;
-            incNE = 2 * dy - 2 * dx;
+            incNE = 2 * (dy - dx);
             d = 2 * dy - dx;
             y = y1;
             for (x = x1; x <= x2; x++)
             {
-                writePixel(x, y);
+                writePixel(x, y,apagavel);
                 if (d <= 0)
                 {
                     d += incE;
@@ -129,55 +132,88 @@ namespace CG2._1
                 else
                 {
                     d += incNE;
-                    y += declive;
+                    y++;
                 }
             }
         }
 
 
-        private void writePixel(int x, int y)
+        private void writePixel(int x, int y,Boolean apagavel)
         {
+            if(apagavel)
+                list.Add(new Point(x, y));
             Bitmap m = ((Bitmap)(pbGraficos.Image));
-            if (y < 0)
-                Console.WriteLine("erro");
             m.SetPixel(x, y, Color.FromArgb(0, 0, 0));
             pbGraficos.Image = m;
         }
 
         private void PbGraficos_Click(object sender, EventArgs e)
         {
-            if (cordenadas.X == 0 && cordenadas.Y == 0)
-                cordenadas = ((MouseEventArgs)e).Location;
-            else 
+            if (!click)
             {
-                int x1, x2, y1, y2,aux;
-                x1 = cordenadas.X;
-                y1 = cordenadas.Y;
-                x2 = ((MouseEventArgs)e).Location.X;
-                y2 = ((MouseEventArgs)e).Location.Y;
-
-                
-
+                cordenadas = ((MouseEventArgs)e).Location;
+                click = true;
+            }
+            else
+            {
                 if (rbDDA.Checked == true)
                 {
-                    DDA(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y);
-                    cordenadas = new Point(0, 0);
+                    DDA(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false);
                 }
-                if(rbGeralReta.Checked == true)
+                if (rbGeralReta.Checked == true)
                 {
-                    eqReta(x1, y1, x2, y2);
-                    cordenadas = new Point(0, 0);
+                    eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false);
                 }
-                if(rbPMReta.Checked == true)
+                if (rbPMReta.Checked == true)
                 {
-                    bresenham(x1, y1, x2, y2);
+                    bresenham(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false);
+                    MessageBox.Show("Hello, world.");
                 }
+                click = false;
+                list = new List<Point>();
             }
         }
 
         private void RbDDA_CheckedChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void PbGraficos_MouseMove(object sender, MouseEventArgs e)
+        {
+            limpa_reta();
+            if(click)
+            {
+                int x = ((MouseEventArgs)e).Location.X;
+                int y = ((MouseEventArgs)e).Location.Y;
+                if (rbDDA.Checked == true)
+                {
+                    DDA(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,true);
+                    
+                }
+                if (rbGeralReta.Checked == true)
+                {
+                    if (((MouseEventArgs)e).Location.X != cordenadas.X && ((MouseEventArgs)e).Location.Y != cordenadas.Y)
+                        eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,true);
+                }
+                if (rbPMReta.Checked == true)
+                {
+                    bresenham(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,true);
+                }
+            }
+        }
+
+        private void limpa_reta()
+        {
+            if(list.Count > 0)
+            {
+                for(int i = 0; i < list.Count; i++)
+                {
+                    Bitmap m = ((Bitmap)(pbGraficos.Image));
+                    m.SetPixel(list[i].X, list[i].Y, Color.FromArgb(255, 255, 255));
+                    pbGraficos.Image = m;
+                }
+            }
         }
     }
 }
