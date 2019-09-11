@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,12 +16,66 @@ namespace CG2._1
         private Point cordenadas;
         private Boolean click = false;
         private List<Point> list = new List<Point>();
+        private Color cor;
 
         public Form1()
         {
             InitializeComponent();
             rbGeralReta.Checked = true;
             cordenadas = new Point(0, 0);
+            cor = Color.FromArgb(0, 0, 0);
+        }
+
+
+        private static void PrintaPixel(int x, int y, Color color, BitmapData data)
+        {
+            unsafe
+            {
+                byte* point = (byte*)data.Scan0.ToPointer();
+
+                point += y * data.Stride + (x * 3);
+
+                *(point++) = (byte)color.B;
+                *(point++) = (byte)color.G;
+                *(point++) = (byte)color.R;
+
+            }
+        }
+
+        private static int GetOctante(int x0, int x1, int y0, int y1)
+        {
+            int octant = 0;
+
+            if (x1 > x0 && y0 > y1)//1º quadrante
+            {
+                if ((x1 - x0) > (y1 - y0))//8º octante
+                    octant = 8;
+                else//7º octante
+                    octant = 7;
+            }
+            else if (x0 > x1 && y0 > y1)//2º quadrante
+            {
+                if ((x1 - x0) < (y1 - y0))//6º octante
+                    octant = 6;
+                else//5º octante
+                    octant = 5;
+            }
+            else if (x0 > x1 && y1 > y0)//3º quadrante
+            {
+                if ((x1 - x0) > (y1 - y0))//4º octante
+                    octant = 4;
+                else//3º octante
+                    octant = 3;
+            }
+            else//4º quadrante
+            {
+                if ((x1 - x0) < (y1 - y0))//2º octante
+                    octant = 2;
+                else//1º octante
+                    octant = 1;
+            }
+
+            return octant;
         }
 
         public void DDA(int x1, int y1, int x2, int y2,Boolean apagavel)
@@ -56,58 +111,73 @@ namespace CG2._1
             }
         }
 
-        public void eqReta(int x1, int y1, int x2, int y2,Boolean apagavel)
+        public Bitmap eqReta(int x1, int y1, int x2, int y2,Boolean apagavel,Color cor,Bitmap map)
         {
-            int aux;
-            Boolean isX;
-            double dy = y2 - y1;
-            double dx = x2 - x1;
-            double m = dy / dx;
 
-            if (dx < dy)
-                isX = false;
-            else
-                isX = true;
+            int width = pbGraficos.Width;
+            int height = pbGraficos.Height;
 
-            int inicio, fim;
+            //lock dados bitmap origem
+            BitmapData data = map.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
 
-            if(isX)
+            unsafe
             {
-                if(x1 > x2)
+                Boolean isX;
+                double dy = y2 - y1;
+                double dx = x2 - x1;
+                double m = dx != 0 && dy != 0 ? dy / dx : 0;
+                int y;
+                int x;
+
+                if (dx < dy)
+                    isX = false;
+                else
+                    isX = true;
+
+                int inicio, fim;
+
+                if (isX)
                 {
-                    inicio = x2; fim = x1;
+                    if (x1 > x2)
+                    {
+                        inicio = x2; fim = x1;
+                    }
+                    else
+                    {
+                        inicio = x1; fim = x2;
+                    }
+
+
+                    for (x = inicio; x <= fim; x++)
+                    {
+
+                        y = Convert.ToInt32(y1 + m * (x - x1));
+                        PrintaPixel(x,y,cor, data);
+                        //writePixel(x, y, apagavel);
+                    }
                 }
                 else
                 {
-                    inicio = x1; fim = x2;
-                }
+                    if (y1 > y2)
+                    {
+                        inicio = y2; fim = y1;
+                    }
+                    else
+                    {
+                        inicio = y1; fim = y2;
+                    }
 
-                double y;
-                for (int x = inicio; x <= fim; x++)
-                {
-                    
-                    y = y1 + m * (x - x1);
-                    writePixel(x, Convert.ToInt32(Math.Round(y)),apagavel);
+                    for (y = inicio; y <= fim; y++)
+                    {
+                        x = Convert.ToInt32(x1 + ((y - y1) / m));
+                        PrintaPixel(x, y, cor, data);
+                        // writePixel(x, y, apagavel);
+                    }
                 }
             }
-            else
-            {
-                if (y1 > y2)
-                {
-                    inicio = y2; fim = y1;
-                }
-                else
-                {
-                    inicio = y1; fim = y2;
-                }
-
-                double x;
-                for (int y = inicio; y <= fim; y++)
-                {
-                    x = x1 + ((y - y1) / m);
-                    writePixel((int)Math.Round(x), y,apagavel);
-                }
-            }       
+                //unlock imagem origem
+                map.UnlockBits(data);
+            return map;
         }
 
         void bresenham(int x1, int y1, int x2, int y2,Boolean apagavel)
@@ -195,15 +265,16 @@ namespace CG2._1
                 }
                 if (rbGeralReta.Checked == true)
                 {
-                    eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false);
+                    Bitmap map = ((Bitmap)(pbGraficos.Image));
+                    pbGraficos.Image = eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false,cor,map);
                 }
                 if (rbPMReta.Checked == true)
                 {
                     bresenham(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false);
                 }
-                if(rbPMReta.Checked == true)
+                if(rbPMCirc.Checked == true)
                 {
-                    eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y, false);
+                    //eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y, false);
                     int raio = (int)Math.Sqrt((((MouseEventArgs)e).Location.X + cordenadas.X) + (((MouseEventArgs)e).Location.Y + cordenadas.Y));
                     pontomedio(raio, 1, cordenadas.X, cordenadas.Y,false);
                 }
@@ -232,8 +303,9 @@ namespace CG2._1
                 }
                 if (rbGeralReta.Checked == true)
                 {
+                    Bitmap map = ((Bitmap)(pbGraficos.Image));
                     if (((MouseEventArgs)e).Location.X != cordenadas.X && ((MouseEventArgs)e).Location.Y != cordenadas.Y)
-                        eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,true);
+                        pbGraficos.Image = eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,true,cor,map);
                 }
                 if (rbPMReta.Checked == true)
                 {
