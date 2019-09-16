@@ -14,20 +14,24 @@ namespace CG2._1
     public partial class Form1 : Form
     {
         private Point cordenadas;
+        private List<Desenho> desenho;
+        private Desenho rascunho;
         private Boolean click = false;
-        private List<Point> list = new List<Point>();
         private Color cor;
+        private Bitmap map;
 
         public Form1()
         {
             InitializeComponent();
             rbGeralReta.Checked = true;
+             map = ((Bitmap)(pbGraficos.Image));
             cordenadas = new Point(0, 0);
-            cor = Color.FromArgb(0, 0, 0);
+            desenho = new List<Desenho>();
+            rascunho = new Desenho();
         }
 
 
-        private static void PrintaPixel(int x, int y, Color color, BitmapData data)
+        private void PrintaPixel(int x, int y, BitmapData data)
         {
             unsafe
             {
@@ -35,9 +39,9 @@ namespace CG2._1
 
                 point += y * data.Stride + (x * 3);
 
-                *(point++) = (byte)color.B;
-                *(point++) = (byte)color.G;
-                *(point++) = (byte)color.R;
+                *(point++) = (byte)cor.B;
+                *(point++) = (byte)cor.G;
+                *(point++) = (byte)cor.R;
 
             }
         }
@@ -78,40 +82,56 @@ namespace CG2._1
             return octant;
         }
 
-        public void DDA(int x1, int y1, int x2, int y2,Boolean apagavel)
+        public Bitmap DDA(int x1, int y1, int x2, int y2,Boolean apagavel, Bitmap map)
         {
-            int Length, I;
-            double X, Y, Xinc, Yinc;
+            int width = pbGraficos.Width;
+            int height = pbGraficos.Height;
 
-            Length = Math.Abs(x2 - x1);
+            //lock dados bitmap origem
+            BitmapData data = map.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
 
-            if (Math.Abs(y2 - y1) > Length)
-                Length = Math.Abs(y2 - y1);
-            Xinc = (double)(x2 - x1) / Length;
-            Yinc = (double)(y2 - y1) / Length;
-
-            X = x1; Y = y1;
-            if(X< x2)
+            unsafe
             {
-                while (X < x2)
+                int Length, I;
+                double X, Y, Xinc, Yinc;
+                Desenho reta = new Desenho();
+
+                Length = Math.Abs(x2 - x1);
+
+                if (Math.Abs(y2 - y1) > Length)
+                    Length = Math.Abs(y2 - y1);
+                Xinc = (double)(x2 - x1) / Length;
+                Yinc = (double)(y2 - y1) / Length;
+
+                X = x1; Y = y1;
+                if (X < x2)
                 {
-                    writePixel((int)Math.Round(X), (int)Math.Round(Y),apagavel);
-                    X = X + Xinc;
-                    Y = Y + Yinc;
+                    while (X < x2)
+                    {
+                        PrintaPixel((int)Math.Round(X), (int)Math.Round(Y), data);
+                        reta.add(new Point((int)Math.Round(X), (int)Math.Round(Y)));
+                        X = X + Xinc;
+                        Y = Y + Yinc;
+                    }
                 }
-            }
-            else
-            {
-                while (X > x2)
+                else
                 {
-                    writePixel((int)Math.Round(X), (int)Math.Round(Y),apagavel);
-                    X = X + Xinc;
-                    Y = Y + Yinc;
+                    while (X > x2)
+                    {
+                        PrintaPixel((int)Math.Round(X), (int)Math.Round(Y), data);
+                        reta.add(new Point((int)Math.Round(X), (int)Math.Round(Y)));
+                        X = X + Xinc;
+                        Y = Y + Yinc;
+                    }
                 }
+
+                desenho.Add(reta);
             }
+            map.UnlockBits(data);
+            return map;
         }
 
-        public Bitmap eqReta(int x1, int y1, int x2, int y2,Boolean apagavel,Color cor,Bitmap map)
+        public Bitmap eqReta(int x1, int y1, int x2, int y2,Boolean apagavel,Bitmap map)
         {
 
             int width = pbGraficos.Width;
@@ -136,6 +156,8 @@ namespace CG2._1
 
                 int inicio, fim;
 
+                Desenho reta = new Desenho();
+
                 if (isX)
                 {
                     if (x1 > x2)
@@ -152,8 +174,12 @@ namespace CG2._1
                     {
 
                         y = Convert.ToInt32(y1 + m * (x - x1));
-                        PrintaPixel(x,y,cor, data);
-                        //writePixel(x, y, apagavel);
+                        PrintaPixel(x,y, data);
+                        if (!apagavel)
+                            reta.add(new Point(x, y));
+                        else
+                            rascunho.add(new Point(x, y));
+
                     }
                 }
                 else
@@ -170,13 +196,18 @@ namespace CG2._1
                     for (y = inicio; y <= fim; y++)
                     {
                         x = Convert.ToInt32(x1 + ((y - y1) / m));
-                        PrintaPixel(x, y, cor, data);
-                        // writePixel(x, y, apagavel);
+                        PrintaPixel(x, y, data);
+                        if (!apagavel)
+                            reta.add(new Point(x, y));
+                        else
+                            rascunho.add(new Point(x, y));
                     }
                 }
+
+                desenho.Add(reta);
             }
                 //unlock imagem origem
-                map.UnlockBits(data);
+            map.UnlockBits(data);
             return map;
         }
 
@@ -208,7 +239,7 @@ namespace CG2._1
             {
                 for (; x <= xfim; x++)
                 {
-                    writePixel(x, y, apagavel);
+                    //writePixel(x, y, apagavel);
                     if (d <= 0)
                     {
                         d += incE;
@@ -226,7 +257,7 @@ namespace CG2._1
                 y2 = -y2;
                 for (; x <= xfim; x++)
                 {
-                    writePixel(x, -y, apagavel);
+                    //writePixel(x, -y, apagavel);
                     if (d <= 0)
                     {
                         d += incE;
@@ -241,14 +272,6 @@ namespace CG2._1
         }
 
 
-        private void writePixel(int x, int y,Boolean apagavel)
-        {
-            if(apagavel)
-                list.Add(new Point(x, y));
-            Bitmap m = ((Bitmap)(pbGraficos.Image));
-            m.SetPixel(x, y, Color.FromArgb(0, 0, 0));
-            pbGraficos.Image = m;
-        }
 
         private void PbGraficos_Click(object sender, EventArgs e)
         {
@@ -261,12 +284,12 @@ namespace CG2._1
             {
                 if (rbDDA.Checked == true)
                 {
-                    DDA(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false);
+                    pbGraficos.Image = DDA(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false,map);
                 }
                 if (rbGeralReta.Checked == true)
                 {
-                    Bitmap map = ((Bitmap)(pbGraficos.Image));
-                    pbGraficos.Image = eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false,cor,map);
+                    
+                    pbGraficos.Image = eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false,map);
                 }
                 if (rbPMReta.Checked == true)
                 {
@@ -280,7 +303,6 @@ namespace CG2._1
                 }
 
                 click = false;
-                list = new List<Point>();
             }
         }
 
@@ -291,21 +313,21 @@ namespace CG2._1
 
         private void PbGraficos_MouseMove(object sender, MouseEventArgs e)
         {
-            limpa_reta();
+           
             if(click)
             {
+                limpa_tela();
                 int x = ((MouseEventArgs)e).Location.X;
                 int y = ((MouseEventArgs)e).Location.Y;
                 if (rbDDA.Checked == true)
                 {
-                    DDA(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,true);
+                    pbGraficos.Image = DDA(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,true, map);
                     
                 }
                 if (rbGeralReta.Checked == true)
                 {
-                    Bitmap map = ((Bitmap)(pbGraficos.Image));
                     if (((MouseEventArgs)e).Location.X != cordenadas.X && ((MouseEventArgs)e).Location.Y != cordenadas.Y)
-                        pbGraficos.Image = eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,true,cor,map);
+                        pbGraficos.Image = eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,true,map);
                 }
                 if (rbPMReta.Checked == true)
                 {
@@ -322,17 +344,33 @@ namespace CG2._1
             }
         }
 
-        private void limpa_reta()
+      
+        public void limpa_tela()
         {
-            if(list.Count > 0)
+            int width = pbGraficos.Width;
+            int height = pbGraficos.Height;
+            //lock dados bitmap origem
+            BitmapData data = map.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+            unsafe
             {
-                for(int i = 0; i < list.Count; i++)
+                if(rascunho.getPixels().Count > 0)
                 {
-                    Bitmap m = ((Bitmap)(pbGraficos.Image));
-                    m.SetPixel(list[i].X, list[i].Y, Color.FromArgb(255, 255, 255));
-                    pbGraficos.Image = m;
+                    List<Point> aux = rascunho.getPixels();
+                    for (int i = 0; i < aux.Count; i++)
+                    {
+                        byte* point = (byte*)data.Scan0.ToPointer();
+
+                        point += aux[i].Y * data.Stride + (aux[i].X * 3);
+
+                        *(point++) = (byte)255;
+                        *(point++) = (byte)255;
+                        *(point++) = (byte)255;
+                    }
+                    //desenho.Remove();
                 }
             }
+            map.UnlockBits(data);
         }
 
         void pontomedio(int raio,int valor, int cx, int cy, Boolean apagavel)
@@ -370,11 +408,16 @@ namespace CG2._1
 
         private void PintaPixel(int x, int y, int valor,Boolean apagavel)
         {
-            if (apagavel)
-                list.Add(new Point(x, y));
             Bitmap m = ((Bitmap)(pbGraficos.Image));
             m.SetPixel(x, y, Color.FromArgb(0, 0, 0));
             pbGraficos.Image = m;
         }
+
+        private void BtnCor_Click(object sender, EventArgs e)
+        {
+            colorDialog1.ShowDialog();
+            cor = colorDialog1.Color;
+        }
+
     }
 }

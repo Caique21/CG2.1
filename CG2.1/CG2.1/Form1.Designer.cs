@@ -44,6 +44,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.rbDDA = new System.Windows.Forms.RadioButton();
             this.Poligonos = new System.Windows.Forms.TabPage();
+            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
+            this.btnCor = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pbGraficos)).BeginInit();
             this.Primitivas.SuspendLayout();
             this.Graficas.SuspendLayout();
@@ -87,6 +89,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.btnCor);
             this.groupBox1.Controls.Add(this.rbPMElipse);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.rbPMCirc);
@@ -218,6 +221,20 @@
             this.Poligonos.Text = "Polígonos";
             this.Poligonos.UseVisualStyleBackColor = true;
             // 
+            // colorDialog1
+            // 
+            this.colorDialog1.AnyColor = true;
+            // 
+            // btnCor
+            // 
+            this.btnCor.Location = new System.Drawing.Point(59, 320);
+            this.btnCor.Name = "btnCor";
+            this.btnCor.Size = new System.Drawing.Size(75, 23);
+            this.btnCor.TabIndex = 10;
+            this.btnCor.Text = "Cor";
+            this.btnCor.UseVisualStyleBackColor = true;
+            this.btnCor.Click += new System.EventHandler(this.BtnCor_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -252,6 +269,8 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.RadioButton rbDDA;
         private System.Windows.Forms.TabPage Poligonos;
+        private System.Windows.Forms.ColorDialog colorDialog1;
+        private System.Windows.Forms.Button btnCor;
     }
 }
 
