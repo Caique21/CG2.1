@@ -28,11 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.pbGraficos = new System.Windows.Forms.PictureBox();
             this.Primitivas = new System.Windows.Forms.TabControl();
             this.Graficas = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btnCor = new System.Windows.Forms.Button();
             this.rbPMElipse = new System.Windows.Forms.RadioButton();
             this.label3 = new System.Windows.Forms.Label();
             this.rbPMCirc = new System.Windows.Forms.RadioButton();
@@ -45,7 +45,6 @@
             this.rbDDA = new System.Windows.Forms.RadioButton();
             this.Poligonos = new System.Windows.Forms.TabPage();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
-            this.btnCor = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pbGraficos)).BeginInit();
             this.Primitivas.SuspendLayout();
             this.Graficas.SuspendLayout();
@@ -55,7 +54,7 @@
             // pbGraficos
             // 
             this.pbGraficos.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pbGraficos.Image = ((System.Drawing.Image)(resources.GetObject("pbGraficos.Image")));
+            this.pbGraficos.Image = global::CG2._1.Properties.Resources.download2;
             this.pbGraficos.InitialImage = null;
             this.pbGraficos.Location = new System.Drawing.Point(12, 12);
             this.pbGraficos.Name = "pbGraficos";
@@ -105,6 +104,16 @@
             this.groupBox1.Size = new System.Drawing.Size(197, 492);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
+            // 
+            // btnCor
+            // 
+            this.btnCor.Location = new System.Drawing.Point(59, 320);
+            this.btnCor.Name = "btnCor";
+            this.btnCor.Size = new System.Drawing.Size(75, 23);
+            this.btnCor.TabIndex = 10;
+            this.btnCor.Text = "Cor";
+            this.btnCor.UseVisualStyleBackColor = true;
+            this.btnCor.Click += new System.EventHandler(this.BtnCor_Click);
             // 
             // rbPMElipse
             // 
@@ -224,16 +233,6 @@
             // colorDialog1
             // 
             this.colorDialog1.AnyColor = true;
-            // 
-            // btnCor
-            // 
-            this.btnCor.Location = new System.Drawing.Point(59, 320);
-            this.btnCor.Name = "btnCor";
-            this.btnCor.Size = new System.Drawing.Size(75, 23);
-            this.btnCor.TabIndex = 10;
-            this.btnCor.Text = "Cor";
-            this.btnCor.UseVisualStyleBackColor = true;
-            this.btnCor.Click += new System.EventHandler(this.BtnCor_Click);
             // 
             // Form1
             // 

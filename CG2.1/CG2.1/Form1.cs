@@ -15,23 +15,23 @@ namespace CG2._1
     {
         private Point cordenadas;
         private List<Desenho> desenho;
-        private Desenho rascunho;
         private Boolean click = false;
         private Color cor;
         private Bitmap map;
+        
 
         public Form1()
         {
             InitializeComponent();
             rbGeralReta.Checked = true;
-             map = ((Bitmap)(pbGraficos.Image));
             cordenadas = new Point(0, 0);
             desenho = new List<Desenho>();
-            rascunho = new Desenho();
+            map = ((Bitmap)(pbGraficos.Image));
+            pbGraficos.Enabled = true;
         }
 
 
-        private void PrintaPixel(int x, int y, BitmapData data)
+        public void PrintaPixel(int x, int y, BitmapData data)
         {
             unsafe
             {
@@ -46,7 +46,7 @@ namespace CG2._1
             }
         }
 
-        private static int GetOctante(int x0, int x1, int y0, int y1)
+        private static int GetOctante(int x0, int y0, int x1, int y1)
         {
             int octant = 0;
 
@@ -94,7 +94,7 @@ namespace CG2._1
             {
                 int Length, I;
                 double X, Y, Xinc, Yinc;
-                Desenho reta = new Desenho();
+                Desenho reta = new Reta();
 
                 Length = Math.Abs(x2 - x1);
 
@@ -109,7 +109,8 @@ namespace CG2._1
                     while (X < x2)
                     {
                         PrintaPixel((int)Math.Round(X), (int)Math.Round(Y), data);
-                        reta.add(new Point((int)Math.Round(X), (int)Math.Round(Y)));
+                        if(!apagavel)
+                            reta.add(new Point((int)Math.Round(X), (int)Math.Round(Y)));
                         X = X + Xinc;
                         Y = Y + Yinc;
                     }
@@ -119,13 +120,14 @@ namespace CG2._1
                     while (X > x2)
                     {
                         PrintaPixel((int)Math.Round(X), (int)Math.Round(Y), data);
-                        reta.add(new Point((int)Math.Round(X), (int)Math.Round(Y)));
+                        if (!apagavel)
+                            reta.add(new Point((int)Math.Round(X), (int)Math.Round(Y)));
                         X = X + Xinc;
                         Y = Y + Yinc;
                     }
                 }
-
-                desenho.Add(reta);
+                if(reta.getPixels().Count > 0)
+                    desenho.Add(reta);
             }
             map.UnlockBits(data);
             return map;
@@ -156,7 +158,7 @@ namespace CG2._1
 
                 int inicio, fim;
 
-                Desenho reta = new Desenho();
+                Desenho reta = new Reta(cor);
 
                 if (isX)
                 {
@@ -177,8 +179,6 @@ namespace CG2._1
                         PrintaPixel(x,y, data);
                         if (!apagavel)
                             reta.add(new Point(x, y));
-                        else
-                            rascunho.add(new Point(x, y));
 
                     }
                 }
@@ -199,78 +199,155 @@ namespace CG2._1
                         PrintaPixel(x, y, data);
                         if (!apagavel)
                             reta.add(new Point(x, y));
-                        else
-                            rascunho.add(new Point(x, y));
                     }
                 }
-
-                desenho.Add(reta);
+                if(reta.getPixels().Count > 0)
+                    desenho.Add(reta);
             }
                 //unlock imagem origem
             map.UnlockBits(data);
             return map;
         }
 
-        void bresenham(int x1, int y1, int x2, int y2,Boolean apagavel)
+        Bitmap bresenham(int x1, int y1, int x2, int y2,Boolean apagavel,BitmapData data)
         {
-            int declive = 1;
-            int dx, dy, incE, incNE, d, x, y;
-            int xfim;
-            dx = x2 - x1;
-            dy = y2 - y1;
+            unsafe
+            {
+                int declive;
+                int dx, dy, incE, incNE, d, x, y;
+                dx = x2 - x1;
+                dy = y2 - y1;
 
+                if (dx < 0)
+                    return bresenham(x2, y2, x1, y1, apagavel, data);
+
+                if (dy < 0)
+                    declive = -1;
+                else
+                    declive = 1;
+
+                Desenho reta = new Reta(cor);
+                x = x1;
+                y = y1;
+                PrintaPixel(x, y, data);
+                if (!apagavel)
+                    reta.add(new Point(x, y));
+                if(dx > declive * dy)
+                {
+                    if (dy < 0)
+                    {
+                        d = 2 * dy + dx;
+                        while (x < x2)
+                        {
+                            if (d < 0)
+                            {
+                                d += 2 * (dy + dx);
+                                x++;
+                                y--;
+                            }
+                            else
+                            {
+                                d += 2 * dy;
+                                x++;
+                            }
+                            PrintaPixel(x, y, data);
+                            if (!apagavel)
+                                reta.add(new Point(x, y));
+                        }
+                    }
+                    else
+                    { 
+                        d = 2 * dy - dx;
+                        while (x < x2)
+                        {
+                            if (d < 0)
+                            { // escolhido é o I
+                                d += 2 * dy;
+                                x++; // varia apenas no eixo x
+                            }
+                            else
+                            { // escolhido é o S
+                                d += 2 * (dy - dx);
+                                x++;
+                                y++;
+                            }
+                            PrintaPixel(x, y, data);
+                            if (!apagavel)
+                                reta.add(new Point(x, y));
+                        }
+                    }
+                }
+                else
+                {
+                    if (dy < 0)
+                    { // caso y2<y1
+                        d = dy + 2 * dx;
+                        while (y > y2)
+                        {
+                            if (d < 0)
+                            {
+                                d += 2 * dx;
+                                y--; // varia apenas no eixo y
+                            }
+                            else
+                            {
+                                d += 2 * (dy + dx);
+                                x++;
+                                y--;
+                            }
+                            PrintaPixel(x, y, data);
+                            if (!apagavel)
+                                reta.add(new Point(x, y));
+                        }
+                    }
+                    else
+                    { // caso y1<y2
+                        d = dy - 2 * dx;
+                        while (y < y2)
+                        {
+                            if (d < 0)
+                            {
+                                d += 2 * (dy - dx);
+                                x++;
+                                y++;
+                            }
+                            else
+                            {
+                                d += -2 * dx;
+                                y++; // varia apenas no eixo y
+                            }
+                            PrintaPixel(x, y, data);
+                            if (!apagavel)
+                                reta.add(new Point(x, y));
+                        }
+                    }
+                }
+                PrintaPixel(x, y, data);
+                if (!apagavel)
+                    reta.add(new Point(x, y));
+            }
+            map.UnlockBits(data);
+            return map;
+            /*
             // Constante de Bresenham 
             incE = 2 * dy;
-            incNE = 2 * (dy - dx);
+            incNE = 2 * dy - 2 * dx;
             d = 2 * dy - dx;
-            if(x2 > x1)
+            y = y1;
+            for (x = x1; x <= x2; x++)
             {
-                int aux = incE;
-                incE = incNE;
-                incNE = aux;
-                x = x1; xfim = x2; y = y2;
-            }
-            else
-            {
-                x = x2; xfim = x1; y = y1;
-            }
-
-            if(y2 >= y1)
-            {
-                for (; x <= xfim; x++)
+                PrintaPixel(x, y, data);
+                if (d <= 0)
                 {
-                    //writePixel(x, y, apagavel);
-                    if (d <= 0)
-                    {
-                        d += incE;
-                    }
-                    else
-                    {
-                        d += incNE;
-                        y++;
-                    }
+                    d += incE;
                 }
-            }
-            else
-            {
-                y1 = -y1;
-                y2 = -y2;
-                for (; x <= xfim; x++)
+                else
                 {
-                    //writePixel(x, -y, apagavel);
-                    if (d <= 0)
-                    {
-                        d += incE;
-                    }
-                    else
-                    {
-                        d += incNE;
-                        y++;
-                    }
+                    d += incNE;
+                    y += declive;
                 }
-            }
+            }*/
         }
-
 
 
         private void PbGraficos_Click(object sender, EventArgs e)
@@ -286,20 +363,33 @@ namespace CG2._1
                 {
                     pbGraficos.Image = DDA(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false,map);
                 }
+
                 if (rbGeralReta.Checked == true)
                 {
                     
                     pbGraficos.Image = eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false,map);
                 }
+
                 if (rbPMReta.Checked == true)
                 {
-                    bresenham(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,false);
+                    int width = pbGraficos.Width;
+                    int height = pbGraficos.Height;
+                    BitmapData data = map.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+                    pbGraficos.Image = bresenham(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y, false, data);
+                            
                 }
+
                 if(rbPMCirc.Checked == true)
                 {
-                    //eqReta(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y, false);
-                    int raio = (int)Math.Sqrt((((MouseEventArgs)e).Location.X + cordenadas.X) + (((MouseEventArgs)e).Location.Y + cordenadas.Y));
+                    int raio = (int)Math.Sqrt(Math.Pow((((MouseEventArgs)e).Location.X - cordenadas.X), 2) + Math.Pow((((MouseEventArgs)e).Location.Y - cordenadas.Y), 2));
                     pontomedio(raio, 1, cordenadas.X, cordenadas.Y,false);
+                }
+
+                if(rbGeralCirc.Checked == true)
+                {
+                    int raio = (int)Math.Sqrt(Math.Pow((((MouseEventArgs)e).Location.X - cordenadas.X), 2) + Math.Pow((((MouseEventArgs)e).Location.Y - cordenadas.Y), 2));
+                    eqCirc(raio, cordenadas.X, cordenadas.Y);
                 }
 
                 click = false;
@@ -313,12 +403,9 @@ namespace CG2._1
 
         private void PbGraficos_MouseMove(object sender, MouseEventArgs e)
         {
-           
             if(click)
             {
                 limpa_tela();
-                int x = ((MouseEventArgs)e).Location.X;
-                int y = ((MouseEventArgs)e).Location.Y;
                 if (rbDDA.Checked == true)
                 {
                     pbGraficos.Image = DDA(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y,true, map);
@@ -333,13 +420,18 @@ namespace CG2._1
                 {
                     if (((MouseEventArgs)e).Location.X != cordenadas.X && ((MouseEventArgs)e).Location.Y != cordenadas.Y)
                     {
-                        bresenham(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y, true);
-                    }   
+                        int width = pbGraficos.Width;
+                        int height = pbGraficos.Height;
+                        BitmapData data = map.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+
+                        pbGraficos.Image = bresenham(cordenadas.X, cordenadas.Y, ((MouseEventArgs)e).Location.X, ((MouseEventArgs)e).Location.Y, true, data);
+
+                    }
                 }
-                if (rbGeralCirc.Checked == true)
+                if (rbPMCirc.Checked == true)
                 {
-                    //int raio = (int)Math.Sqrt(cordenadas.X + cordenadas.Y);
-                    //pontomedio(raio, 1, cordenadas.X, cordenadas.Y,true);
+                    int raio = (int)Math.Sqrt(Math.Pow((((MouseEventArgs)e).Location.X - cordenadas.X), 2) + Math.Pow((((MouseEventArgs)e).Location.Y - cordenadas.Y), 2));
+                    //pontomedio(raio, 1, cordenadas.X, cordenadas.Y, true);
                 }
             }
         }
@@ -351,10 +443,29 @@ namespace CG2._1
             int height = pbGraficos.Height;
             //lock dados bitmap origem
             BitmapData data = map.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            List<Point> aux = new List<Point>();
+
+            for (int i = 0; i < desenho.Count; i++)
+                aux.AddRange(desenho[i].getPixels());
 
             unsafe
             {
-                if(rascunho.getPixels().Count > 0)
+                for(int x = 0; x < width && aux.Count > 0; x++)
+                {
+                    for(int y = 0; y < height; y++)
+                    {
+                        byte* point = (byte*)data.Scan0.ToPointer();
+
+                        point += y * data.Stride + (x * 3);
+                        if (!aux.Contains(new Point(x, y)))
+                        {
+                            *(point++) = (byte)255;
+                            *(point++) = (byte)255;
+                            *(point++) = (byte)255;
+                        }
+                    }
+                }
+                /*if(rascunho.getPixels().Count > 0)
                 {
                     List<Point> aux = rascunho.getPixels();
                     for (int i = 0; i < aux.Count; i++)
@@ -368,9 +479,43 @@ namespace CG2._1
                         *(point++) = (byte)255;
                     }
                     //desenho.Remove();
-                }
+                }*/
             }
             map.UnlockBits(data);
+        }
+
+        void eqCirc(int raio, int cx, int cy)
+        {
+            double x = cx;
+            double y = cy + raio;
+            Desenho circulo = new Circunferencia(cor);
+
+            PintaPixel((int)x, (int)y, 0, false, circulo);
+            while (x < cx + raio)
+            {
+                y = y - 1;
+
+                int a, b, c;
+                a = 1;
+                b = -2 * cx;
+                c = cx * cx + (int)Math.Pow(y, 2) + 2 * ((int)y * cy) + (int)Math.Pow(cy, 2);
+
+                int delta = b * b - (4 * a * c);
+                int baskhara1 = -b + (int)Math.Sqrt(delta) / 2 * a;
+                int baskhara2 = -b - (int)Math.Sqrt(delta) / 2 * a;
+
+                if (Math.Pow(baskhara1, 2) + (b * baskhara1) == Math.Pow(raio, 2) + c)
+                {
+                    PintaPixel((int)baskhara1, (int)y, 0, false, circulo);
+                    x = baskhara1;
+                }
+
+                if (Math.Pow(baskhara2, 2) + (b * baskhara2) == Math.Pow(raio, 2) + c)
+                {
+                    PintaPixel((int)baskhara2, (int)y, 0, false, circulo);
+                    x = baskhara2;
+                }
+            }
         }
 
         void pontomedio(int raio,int valor, int cx, int cy, Boolean apagavel)
@@ -378,8 +523,9 @@ namespace CG2._1
             int x = 0;
             int y = raio;
             double d = 1 - raio;
+            Desenho circulo = new Circunferencia(cor);
 
-            PontosCircunferência(x, y, cx, cy, valor,apagavel);
+            PontosCircunferência(x, y, cx, cy, valor,apagavel,circulo);
             while(y > x)
             {
                 if (d < 0)
@@ -390,27 +536,33 @@ namespace CG2._1
                     y--;
                 }
                 x++;
-                PontosCircunferência(x, y, cx, cy, valor,apagavel);
+                PontosCircunferência(x, y, cx, cy, valor,apagavel,circulo);
             }
+            desenho.Add(circulo);
         }
 
-        void PontosCircunferência(int x, int y,int cx, int cy, int valor,Boolean apagavel)
+        void PontosCircunferência(int x, int y,int cx, int cy, int valor,Boolean apagavel,Desenho circ)
         {
-            PintaPixel(cx + x, cy + y, valor, apagavel);
-            PintaPixel(cx + y, cy + x, valor, apagavel);
-            PintaPixel(cx + y, cy - x, valor, apagavel);
-            PintaPixel(cx + x, cy - y, valor, apagavel);
-            PintaPixel(cx - x, cy - y, valor, apagavel);
-            PintaPixel(cx - y, cy - x, valor, apagavel);
-            PintaPixel(cx - y, cy + x, valor, apagavel);
-            PintaPixel(cx - x, cy + y, valor, apagavel);
+            PintaPixel(cx + x, cy + y, valor, apagavel,circ);
+            PintaPixel(cx + y, cy + x, valor, apagavel, circ);
+            PintaPixel(cx + y, cy - x, valor, apagavel, circ);
+            PintaPixel(cx + x, cy - y, valor, apagavel, circ);
+            PintaPixel(cx - x, cy - y, valor, apagavel, circ);
+            PintaPixel(cx - y, cy - x, valor, apagavel, circ);
+            PintaPixel(cx - y, cy + x, valor, apagavel, circ);
+            PintaPixel(cx - x, cy + y, valor, apagavel, circ);
         }
 
-        private void PintaPixel(int x, int y, int valor,Boolean apagavel)
+        private void PintaPixel(int x, int y, int valor,Boolean apagavel,Desenho c)
         {
-            Bitmap m = ((Bitmap)(pbGraficos.Image));
-            m.SetPixel(x, y, Color.FromArgb(0, 0, 0));
-            pbGraficos.Image = m;
+            if(x >=0 && x < pbGraficos.Image.Width && y >= 0 && y < pbGraficos.Image.Height)
+            {
+                if (!apagavel)
+                    c.add(new Point(x, y));
+                Bitmap m = ((Bitmap)(pbGraficos.Image));
+                m.SetPixel(x, y, cor);
+                pbGraficos.Image = m;
+            }
         }
 
         private void BtnCor_Click(object sender, EventArgs e)

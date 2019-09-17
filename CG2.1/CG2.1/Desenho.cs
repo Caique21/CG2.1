@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CG2._1
 {
-    class Desenho
+    abstract class Desenho
     {
         private List<Point> pixels;
         private Color cor;
@@ -58,5 +58,6 @@ namespace CG2._1
         {
             return cor;
         }
+
     }
 }
